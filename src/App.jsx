@@ -4,8 +4,36 @@ import {
   useState
 } from "react";
 
+import {
+  FiBriefcase,
+  FiMusic,
+  FiBookOpen,
+  FiMonitor,
+  FiHome,
+  FiMessageCircle,
+  FiPhone,
+  FiBell,
+  FiMapPin,
+  FiUser,
+  FiPlay,
+  FiPause,
+  FiSkipBack,
+  FiSkipForward,
+  FiVolume2,
+  FiMap
+} from "react-icons/fi";
+import {
+  FaYoutube,
+  FaLinkedin,
+  FaFacebook,
+  FaInstagram,
+  FaGithub,
+  FaTwitter
+} from "react-icons/fa";
+
 import "./App.css";
 import audioData from "./data/audio.json";
+
 
 
 /* =========================================================
@@ -33,37 +61,37 @@ const topButtons = [
 const gridButtons = [
   {
     id: 1,
-    title: "Image Blocks",
+    title: "Vadodara, Gujarat",
     image: "/images/grid.jpg",
     href: "#images"
   },
   {
     id: 2,
-    title: "Developer",
+    title: "Airport, Kolkata",
     image: "/images/grid1.jpg",
     href: "#developer"
   },
   {
     id: 3,
-    title: "Projects",
+    title: "Bhagalpur, Bihar",
     image: "/images/grid2.jpg",
     href: "#projects"
   },
   {
     id: 4,
-    title: "Design",
+    title: "Station, Haridwar",
     image: "/images/grid3.jpg",
     href: "#design"
   },
   {
     id: 5,
-    title: "Tools",
+    title: "Bhagalpur, Bihar",
     image: "/images/grid4.jpg",
     href: "#tools"
   },
   {
     id: 6,
-    title: "More",
+    title: "Chapra, Bihar",
     image: "/images/grid5.jpg",
     href: "#more"
   }
@@ -76,166 +104,65 @@ const gridButtons = [
 
 const bottomButtons = [
   {
-    id: "home",
-    href: "#home",
+    id: "Portfolio",
+    href: "https://mocosn.in",
     image: "/images/bg.avif"
   },
   {
-    id: "developer",
-    href: "#developer",
+    id: "Music",
+    href: "https://music.mocosn.in",
     image: "/images/bg.avif"
   },
   {
-    id: "projects",
-    href: "#projects",
+    id: "IRSO-LMS",
+    href: "https://iirslms.mocosn.in/",
     image: "/images/bg.avif"
   },
   {
-    id: "design",
-    href: "#design",
+    id: "Software",
+    href: "https://software.mocosn.in/",
     image: "/images/bg.avif"
   },
   {
-    id: "tools",
-    href: "#tools",
+    id: "school",
+    href: "https://sbcm.mocosn.in/",
     image: "/images/bg.avif"
   },
   {
-    id: "more-1",
-    href: "#more",
+    id: "chatting",
+    href: "https://chat.mocosn.in/",
     image: "/images/bg.avif"
   },
   {
-    id: "more-2",
-    href: "#more",
+    id: "info-phone",
+    href: "https://phoneinfo.mocosn.in/",
     image: "/images/bg.avif"
   },
   {
-    id: "more-3",
-    href: "#more",
+    id: "notification",
+    href: "https://edvyra.com/",
     image: "/images/bg.avif"
   },
   {
-    id: "more-4",
-    href: "#more",
+    id: "manage-school",
+    href: "https://mangeschool.mocosn.in/",
     image: "/images/bg.avif"
   },
   {
-    id: "more-5",
-    href: "#more",
+    id: "know-about-bihar",
+    href: "https://biharbhraman.in/",
     image: "/images/bg.avif"
   },
   {
-    id: "more-6",
-    href: "#more",
+    id: "teacher",
+    href: "https://teacher.mocosn.in/",
     image: "/images/bg.avif"
   }
 ];
 
 
 /* =========================================================
-   ICON
-========================================================= */
-
-function Icon({
-  name,
-  size = 18
-}) {
-  const props = {
-    width: size,
-    height: size,
-    viewBox: "0 0 24 24",
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: "1.8",
-    strokeLinecap: "round",
-    strokeLinejoin: "round"
-  };
-
-  if (name === "play") {
-    return (
-      <svg {...props}>
-        <path
-          d="M8 5.5L19 12L8 18.5V5.5Z"
-          fill="currentColor"
-          stroke="none"
-        />
-      </svg>
-    );
-  }
-
-  if (name === "pause") {
-    return (
-      <svg {...props}>
-        <rect
-          x="7"
-          y="5"
-          width="3"
-          height="14"
-          rx="1"
-          fill="currentColor"
-          stroke="none"
-        />
-
-        <rect
-          x="14"
-          y="5"
-          width="3"
-          height="14"
-          rx="1"
-          fill="currentColor"
-          stroke="none"
-        />
-      </svg>
-    );
-  }
-
-  if (name === "previous") {
-    return (
-      <svg {...props}>
-        <path d="M6 5V19" />
-
-        <path
-          d="M18 6L9 12L18 18V6Z"
-          fill="currentColor"
-          stroke="none"
-        />
-      </svg>
-    );
-  }
-
-  if (name === "next") {
-    return (
-      <svg {...props}>
-        <path d="M18 5V19" />
-
-        <path
-          d="M6 6L15 12L6 18V6Z"
-          fill="currentColor"
-          stroke="none"
-        />
-      </svg>
-    );
-  }
-
-  if (name === "volume") {
-    return (
-      <svg {...props}>
-        <path d="M4 9H8L13 5V19L8 15H4V9Z" />
-
-        <path d="M16 9C17.5 10.5 17.5 13.5 16 15" />
-
-        <path d="M18.5 6.5C21.5 9.5 21.5 14.5 18.5 17.5" />
-      </svg>
-    );
-  }
-
-  return null;
-}
-
-
-/* =========================================================
-   TIME FORMAT
+    TIME FORMAT
 ========================================================= */
 
 function formatTime(seconds) {
@@ -832,7 +759,7 @@ function App() {
 
           <a
             key={button.id}
-            href={button.href}
+            // href={button.href}
             className="shortcut-card"
           >
 
@@ -1006,10 +933,7 @@ function App() {
             aria-label="Previous"
           >
 
-            <Icon
-              name="previous"
-              size={17}
-            />
+            <FiSkipBack size={17} />
 
           </button>
 
@@ -1027,14 +951,7 @@ function App() {
             }
           >
 
-            <Icon
-              name={
-                isPlaying
-                  ? "pause"
-                  : "play"
-              }
-              size={20}
-            />
+            {isPlaying ? <FiPause size={20} /> : <FiPlay size={20} />}
 
           </button>
 
@@ -1048,10 +965,7 @@ function App() {
             aria-label="Next"
           >
 
-            <Icon
-              name="next"
-              size={17}
-            />
+            <FiSkipForward size={17} />
 
           </button>
 
@@ -1060,10 +974,7 @@ function App() {
 
           <div className="volume-control">
 
-            <Icon
-              name="volume"
-              size={17}
-            />
+            <FiVolume2 size={17} />
 
 
             <input
@@ -1095,46 +1006,28 @@ function App() {
 
   <div className="side-buttons">
 
-    <a href="#one">
-      <img
-        src="/images/bg.avif"
-        alt=""
-      />
+    <a href="https://github.com/MOCO-SN/">
+      <FaGithub size={20} className="side-icon" />
     </a>
 
-    <a href="#two">
-      <img
-        src="/images/shortcut/youtube.svg"
-        alt=""
-      />
+    <a href="#x">
+      <FaTwitter size={20} className="side-icon" />
     </a>
 
-    <a href="#three">
-      <img
-        src="/images/shortcut/linkedin.svg"
-        alt=""
-      />
+    <a href="https://www.linkedin.com/in/sachin-patel-b5106a295/">
+      <FaLinkedin size={20} className="side-icon" />
     </a>
 
     <a href="#facebook">
-      <img
-        src="/images/shortcut/github.svg"
-        alt="Facebook"
-      />
+      <FaFacebook size={20} className="side-icon" />
     </a>
 
-    <a href="#instagram">
-      <img
-        src="/images/shortcut/instagram.svg"
-        alt="Instagram"
-      />
+    <a href="https://www.instagram.com/_sachin_2006_01/">
+      <FaInstagram size={20} className="side-icon" />
     </a>
 
-    <a href="#six">
-      <img
-        src="/images/bg.avif"
-        alt=""
-      />
+    <a href="htts://mocosn.in/">
+      <FiUser size={20} className="side-icon" />
     </a>
 
   </div>
@@ -1151,33 +1044,46 @@ function App() {
 
         <nav className="bottom-navigation">
 
-          {bottomButtons.map((button) => (
+          {bottomButtons.map((button) => {
 
-            <a
-              key={button.id}
-              href={button.href}
-              className={`bottom-link ${
-                activeNav === button.id
-                  ? "active"
-                  : ""
-              }`}
-              onClick={() =>
-                handleNavClick(button.id)
-              }
-            >
+              const iconMap = {
+                "Portfolio": <FiBriefcase size={20} key="portfolio" />,
+                "Music": <FiMusic size={20} key="music" />,
+                "IRSO-LMS": <FiBookOpen size={20} key="irso" />,
+                "Software": <FiMonitor size={20} key="software" />,
+                "school": <FiHome size={20} key="school" />,
+                "chatting": <FiMessageCircle size={20} key="chatting" />,
+                "info-phone": <FiPhone size={20} key="phone" />,
+                "notification": <FiBell size={20} key="notification" />,
+                "manage-school": <FiHome size={20} key="manage" />,
+                "know-about-bihar": <FiMapPin size={20} key="bihar" />,
+                "teacher": <FiUser size={20} key="teacher" />
+              };
 
-              <span className="bottom-shortcuts">
+              const icon = iconMap[button.id];
 
-                <img
-                  src={button.image}
-                  alt=""
-                />
+              return (
 
-              </span>
+                <a
+                  key={button.id}
+                  href={button.href}
+                  className={`bottom-link ${
+                    activeNav === button.id
+                      ? "active"
+                      : ""
+                  }`}
+                  onClick={() =>
+                    handleNavClick(button.id)
+                  }
+                >
 
-            </a>
+                  {icon}
 
-          ))}
+                </a>
+
+              );
+
+            })}
 
         </nav>
 

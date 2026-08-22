@@ -679,7 +679,10 @@ a {
   width: 38px;
   height: 38px;
 
-  display: block;
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
 
   overflow: hidden;
 
@@ -709,6 +712,10 @@ a {
   object-fit: cover;
 }
 
+.side-icon {
+  color: #fff;
+}
+
 /* =========================================================
    BOTTOM BAR
    EXISTING GLASS STYLE
@@ -728,7 +735,7 @@ a {
 
   padding: 8px 12px;
 
-  border-radius: 22px;
+  border-radius: 16px;
 
   background: rgba(255, 255, 255, 0.219);
 
