@@ -144,8 +144,8 @@ const bottomButtons = [
     image: "/images/bg.avif"
   },
   {
-    id: "manage-school",
-    href: "https://mangeschool.mocosn.in/",
+    id: "app",
+    href: "https://mocoplayer.mocosn.in/",
     image: "/images/bg.avif"
   },
   {
@@ -1055,6 +1055,7 @@ function App() {
                 "chatting": <FiMessageCircle size={20} key="chatting" />,
                 "info-phone": <FiPhone size={20} key="phone" />,
                 "notification": <FiBell size={20} key="notification" />,
+                "app": <FiPlay size={20} key="app" />,
                 "manage-school": <FiHome size={20} key="manage" />,
                 "know-about-bihar": <FiMapPin size={20} key="bihar" />,
                 "teacher": <FiUser size={20} key="teacher" />
