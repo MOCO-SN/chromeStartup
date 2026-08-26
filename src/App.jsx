@@ -208,6 +208,8 @@ function App() {
 
   const [activeNav, setActiveNav] = useState("home");
 
+  const [activeUrl, setActiveUrl] = useState("");
+
 
   /* =======================================================
      CURRENT TRACK
@@ -664,13 +666,20 @@ function App() {
   };
 
 
+  const handleExternalNav = (url) => {
+
+    setActiveUrl(url);
+
+  };
+
+
   /* =======================================================
      RENDER
   ======================================================= */
 
   return (
 
-    <div className="home">
+    <div className={`home ${activeUrl ? "web-viewer-active" : ""}`}>
 
       {/* =================================================
           BACKGROUND
@@ -752,7 +761,7 @@ function App() {
 
       <section
         id="home"
-        className="shortcut-grid"
+        className={`shortcut-grid ${activeUrl ? "hidden" : ""}`}
       >
 
         {gridButtons.map((button) => (
@@ -790,7 +799,7 @@ function App() {
           RIGHT SIDE OF GRID
       ================================================= */}
 
-      <section className="audio-player">
+      <section className={`audio-player ${activeUrl ? "hidden" : ""}`}>
 
         {/* =================================================
             REAL AUDIO ELEMENT
@@ -1006,7 +1015,7 @@ function App() {
 
   <div className="side-buttons">
 
-    <a href="https://github.com/MOCO-SN/">
+    <a href="https://github.com/MOCO-SN/" onClick={(e) => { e.preventDefault(); handleExternalNav("https://github.com/MOCO-SN/"); }}>
       <FaGithub size={20} className="side-icon" />
     </a>
 
@@ -1014,7 +1023,7 @@ function App() {
       <FaTwitter size={20} className="side-icon" />
     </a>
 
-    <a href="https://www.linkedin.com/in/sachin-patel-b5106a295/">
+    <a href="https://www.linkedin.com/in/sachin-patel-b5106a295/" onClick={(e) => { e.preventDefault(); handleExternalNav("https://www.linkedin.com/in/sachin-patel-b5106a295/"); }}>
       <FaLinkedin size={20} className="side-icon" />
     </a>
 
@@ -1022,11 +1031,11 @@ function App() {
       <FaFacebook size={20} className="side-icon" />
     </a>
 
-    <a href="https://www.instagram.com/_sachin_2006_01/">
+    <a href="https://www.instagram.com/_sachin_2006_01/" onClick={(e) => { e.preventDefault(); handleExternalNav("https://www.instagram.com/_sachin_2006_01/"); }}>
       <FaInstagram size={20} className="side-icon" />
     </a>
 
-    <a href="htts://mocosn.in/">
+    <a href="htts://mocosn.in/" onClick={(e) => { e.preventDefault(); handleExternalNav("https://mocosn.in/"); }}>
       <FiUser size={20} className="side-icon" />
     </a>
 
@@ -1073,9 +1082,11 @@ function App() {
                       ? "active"
                       : ""
                   }`}
-                  onClick={() =>
-                    handleNavClick(button.id)
-                  }
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleNavClick(button.id);
+                    handleExternalNav(button.href);
+                  }}
                 >
 
                   {icon}
@@ -1089,6 +1100,20 @@ function App() {
         </nav>
 
       </div>
+
+      {activeUrl && (
+
+        <section className="web-viewer">
+
+          <iframe
+            src={activeUrl}
+            title="Web Viewer"
+            frameBorder="0"
+          />
+
+        </section>
+
+      )}
 
     </div>
 
