@@ -157,6 +157,11 @@ const bottomButtons = [
     id: "teacher",
     href: "https://teacher.mocosn.in/",
     image: "/images/bg.avif"
+  },
+  {
+    id: "home",
+    href: "#home",
+    image: "/images/bg.avif"
   }
 ];
 
@@ -1067,7 +1072,8 @@ function App() {
                 "app": <FiPlay size={20} key="app" />,
                 "manage-school": <FiHome size={20} key="manage" />,
                 "know-about-bihar": <FiMapPin size={20} key="bihar" />,
-                "teacher": <FiUser size={20} key="teacher" />
+                "teacher": <FiUser size={20} key="teacher" />,
+                "home": <FiHome size={20} key="home" />
               };
 
               const icon = iconMap[button.id];
@@ -1084,8 +1090,19 @@ function App() {
                   }`}
                   onClick={(e) => {
                     e.preventDefault();
+
                     handleNavClick(button.id);
-                    handleExternalNav(button.href);
+
+                    if (button.id === "home") {
+
+                      setActiveUrl("");
+
+                    } else {
+
+                      handleExternalNav(button.href);
+
+                    }
+
                   }}
                 >
 

@@ -695,6 +695,8 @@ a {
   backdrop-filter: blur(15px);
 
   transition: 0.25s ease;
+
+  cursor: pointer;
 }
 
 .side-buttons a:hover {
@@ -773,6 +775,8 @@ a {
   border-radius: 6px;
 
   opacity: 0.55;
+
+  cursor: pointer;
 
   transition:
     opacity 0.25s ease,
