@@ -369,7 +369,7 @@ function App() {
       }
     }
 
-  }, [currentTrackId]);
+  }, [currentTrackId, tracks]);
 
 
   /* =======================================================
@@ -702,6 +702,8 @@ function App() {
   const handleExternalNav = (url) => {
 
     setActiveUrl(url);
+
+    setIsLoading(true);
 
   };
 
@@ -1150,10 +1152,21 @@ function App() {
 
         <section className="web-viewer">
 
+          {isLoading && (
+
+            <div className="web-loading">
+
+              <div className="web-loading-spinner" />
+
+            </div>
+
+          )}
+
           <iframe
             src={activeUrl}
             title="Web Viewer"
             frameBorder="0"
+            onLoad={() => setIsLoading(false)}
           />
 
         </section>

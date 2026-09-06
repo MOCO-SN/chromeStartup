@@ -1,16 +1,25 @@
-# React + Vite
+# MooCSN Startup Page
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A Chrome-style new tab/startup page built with React and Vite.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Audio Player** — Fetches tracks dynamically from `https://music.mocosn.in/data/tracks.json`. Includes play/pause, skip, volume, progress bar, and CSS visualizer.
+- **Web Viewer** — Clicking side or bottom navigation links opens the target page in a fullscreen iframe within the same tab. Navigation and sidebar remain visible. A loading spinner overlay is shown while the iframe loads; clicking another button clears the previous page and loads the new one.
+- **Bottom Navigation** — Grid of icon buttons for quick access to MooCSN services (Portfolio, Music, IRSO-LMS, Software, School, Chatting, Info Phone, Notification, MocoPlayer, Know About Bihar, Teacher, Home).
+- **Side Navigation** — Right sidebar with social/profile links (GitHub, Twitter, LinkedIn, Facebook, Instagram, Profile).
+- **Image Grid** — Shortcut cards with overlay titles.
+- **Search** — Google search redirect.
 
-## React Compiler
+## Scripts
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Command         | Description                     |
+| --------------- | ------------------------------- |
+| `npm run dev`   | Start development server (Vite) |
+| `npm run build` | Build for production            |
+| `npm run lint`  | Run Oxlint                      |
+| `npm run preview` | Preview production build       |
 
-## Expanding the Oxlint configuration
+## Icons
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+Navigation icons are provided by [react-icons](https://react-icons.github.io/react-icons/) using the Feather (`fi`) and Font Awesome (`fa`) icon sets.
