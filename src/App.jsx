@@ -32,7 +32,6 @@ import {
 } from "react-icons/fa";
 
 import "./App.css";
-import audioData from "./data/audio.json";
 
 
 
@@ -195,9 +194,10 @@ function App() {
      TRACKS
   ======================================================= */
 
-  const tracks = Array.isArray(audioData?.tracks)
-    ? audioData.tracks
-    : [];
+  const [tracks, setTracks] = useState([]);
+
+
+  const [isLoading, setIsLoading] = useState(false);
 
 
   /* =======================================================
@@ -258,6 +258,34 @@ function App() {
   ======================================================= */
 
   const audioRef = useRef(null);
+
+
+  useEffect(() => {
+
+    fetch("https://music.mocosn.in/data/tracks.json")
+      .then((res) => res.json())
+      .then((data) => {
+
+        if (Array.isArray(data?.tracks)) {
+
+          setTracks(data.tracks);
+
+          setCurrentTrackId(
+            (prev) => prev || data.tracks[0]?.id || null
+          );
+
+        }
+      })
+      .catch((error) => {
+
+        console.error(
+          "Failed to load tracks:",
+          error
+        );
+
+      });
+
+  }, []);
 
 
   /* =======================================================

@@ -264,10 +264,11 @@ a {
 
   border-radius: 15px;
 
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(187, 53, 53, 0.07);
 
   border: 1px solid rgba(255, 255, 255, 0.12);
 
+  opacity: 80%;
   transition:
     transform 0.3s ease,
     border-color 0.3s ease;
@@ -656,13 +657,13 @@ a {
 .right-sidebar {
   position: fixed;
 
-  background: rgba(41, 39, 39, 0.219);
+    background: rgba(29, 23, 23, 0.4);
 
   z-index: 40;
 
   padding: 6px 6px 6px;
   top: 50%;
-  right: 10px;
+  right: 15px;
   border-radius: 10px;
   transform: translateY(-50%);
 }
@@ -735,11 +736,11 @@ a {
 
   width: min(600px, calc(100vw - 30px));
 
-  padding: 8px 12px;
+  padding: 15px 12px;
 
   border-radius: 16px;
 
-  background: rgba(87, 84, 84, 0.219);
+  background: rgba(29, 23, 23, 0.405);
 
   border: 1px solid rgba(255, 255, 255, 0.12);
 
@@ -932,7 +933,7 @@ a {
   }
 
   .right-sidebar {
-    right: 8px;
+    right: 12px;
   }
 
   .side-buttons a {
