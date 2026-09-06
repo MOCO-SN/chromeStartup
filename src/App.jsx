@@ -20,10 +20,11 @@ import {
   FiSkipBack,
   FiSkipForward,
   FiVolume2,
-  FiMap
+  FiList,
+  FiChevronDown,
+  FiCheck
 } from "react-icons/fi";
 import {
-  FaYoutube,
   FaLinkedin,
   FaFacebook,
   FaInstagram,
@@ -191,11 +192,13 @@ function formatTime(seconds) {
 function App() {
 
   /* =======================================================
-     TRACKS
+     TRACKS & PLAYLISTS
   ======================================================= */
 
   const [tracks, setTracks] = useState([]);
-
+  const [selectedPlaylist, setSelectedPlaylist] = useState("all");
+  const [isPlaylistOpen, setIsPlaylistOpen] = useState(false);
+  const [isTracksListOpen, setIsTracksListOpen] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -220,9 +223,7 @@ function App() {
      CURRENT TRACK
   ======================================================= */
 
-  const [currentTrackId, setCurrentTrackId] = useState(
-    tracks[0]?.id || null
-  );
+  const [currentTrackId, setCurrentTrackId] = useState(null);
 
 
   /* =======================================================
@@ -233,45 +234,55 @@ function App() {
 
 
   /* =======================================================
-     CURRENT TIME
+     CURRENT TIME & DURATION & VOLUME
   ======================================================= */
 
   const [currentTime, setCurrentTime] = useState(0);
 
-
-  /* =======================================================
-     DURATION
-  ======================================================= */
-
   const [duration, setDuration] = useState(0);
-
-
-  /* =======================================================
-     VOLUME
-  ======================================================= */
 
   const [volume, setVolume] = useState(1);
 
 
   /* =======================================================
-     AUDIO REF
+     REFS
   ======================================================= */
 
   const audioRef = useRef(null);
+  const playerRef = useRef(null);
+  const lastLoadedTrackIdRef = useRef(null);
 
+
+  /* =======================================================
+     FETCH REMOTE TRACKS
+  ======================================================= */
 
   useEffect(() => {
 
     fetch("https://music.mocosn.in/data/tracks.json")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
       .then((data) => {
 
-        if (Array.isArray(data?.tracks)) {
+        if (Array.isArray(data?.tracks) && data.tracks.length > 0) {
 
-          setTracks(data.tracks);
+          const normalized = data.tracks.map((item, index) => ({
+            ...item,
+            id:
+              item.id ||
+              `${item.playlist || "track"}-${index}-${encodeURIComponent(
+                item.title || `song-${index}`
+              )}`
+          }));
+
+          setTracks(normalized);
 
           setCurrentTrackId(
-            (prev) => prev || data.tracks[0]?.id || null
+            (prev) => prev || normalized[0]?.id || null
           );
 
         }
@@ -279,7 +290,7 @@ function App() {
       .catch((error) => {
 
         console.error(
-          "Failed to load tracks:",
+          "Failed to load tracks from remote:",
           error
         );
 
@@ -289,18 +300,64 @@ function App() {
 
 
   /* =======================================================
-     FIND CURRENT TRACK
+     PLAYLIST CALCULATION
   ======================================================= */
 
-  const currentTrackIndex = tracks.findIndex(
+  const playlists = [
+    { id: "all", name: "All Songs", count: tracks.length },
+    ...Array.from(
+      new Set(
+        tracks
+          .map((t) => (t.playlist ? t.playlist.trim() : ""))
+          .filter(Boolean)
+      )
+    ).map((pl) => ({
+      id: pl,
+      name: pl.charAt(0).toUpperCase() + pl.slice(1),
+      count: tracks.filter((t) => t.playlist === pl).length
+    }))
+  ];
+
+  const playlistTracks =
+    selectedPlaylist === "all"
+      ? tracks
+      : tracks.filter(
+          (t) =>
+            (t.playlist || "").toLowerCase() === selectedPlaylist.toLowerCase()
+        );
+
+  const currentTrackIndex = playlistTracks.findIndex(
     (item) => item.id === currentTrackId
   );
 
-
   const track =
     currentTrackIndex >= 0
-      ? tracks[currentTrackIndex]
-      : tracks[0] || null;
+      ? playlistTracks[currentTrackIndex]
+      : playlistTracks[0] || tracks[0] || null;
+
+
+  /* =======================================================
+     CLOSE DROPDOWNS ON OUTSIDE CLICK
+  ======================================================= */
+
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (
+        playerRef.current &&
+        !playerRef.current.contains(e.target)
+      ) {
+        setIsPlaylistOpen(false);
+        setIsTracksListOpen(false);
+      }
+    };
+
+    if (isPlaylistOpen || isTracksListOpen) {
+      document.addEventListener("mousedown", handleOutsideClick);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, [isPlaylistOpen, isTracksListOpen]);
 
 
   /* =======================================================
@@ -336,40 +393,32 @@ function App() {
       return;
     }
 
-    /*
-      Important:
-      We use the normal HTML audio element directly.
+    if (lastLoadedTrackIdRef.current !== track.id) {
+      lastLoadedTrackIdRef.current = track.id;
 
-      Do NOT use:
-      createMediaElementSource()
+      audio.src = track.url;
+      audio.load();
 
-      This allows your R2 audio URL to play normally.
-    */
+      setCurrentTime(0);
+      setDuration(0);
 
-    audio.src = track.url;
+      if (isPlaying) {
+        const playPromise = audio.play();
 
-    audio.load();
+        if (playPromise) {
+          playPromise.catch((error) => {
+            console.error(
+              "Unable to play track:",
+              error
+            );
 
-    setCurrentTime(0);
-    setDuration(0);
-
-    if (isPlaying) {
-
-      const playPromise = audio.play();
-
-      if (playPromise) {
-        playPromise.catch((error) => {
-          console.error(
-            "Unable to play track:",
-            error
-          );
-
-          setIsPlaying(false);
-        });
+            setIsPlaying(false);
+          });
+        }
       }
     }
 
-  }, [currentTrackId, tracks]);
+  }, [track, isPlaying]);
 
 
   /* =======================================================
@@ -438,17 +487,17 @@ function App() {
 
     const handleEnded = () => {
 
-      if (!tracks.length) {
+      if (!playlistTracks.length) {
         return;
       }
 
       const nextIndex =
-        currentTrackIndex >= tracks.length - 1
+        currentTrackIndex >= playlistTracks.length - 1
           ? 0
           : currentTrackIndex + 1;
 
       setCurrentTrackId(
-        tracks[nextIndex].id
+        playlistTracks[nextIndex].id
       );
 
       setIsPlaying(true);
@@ -535,7 +584,7 @@ function App() {
 
   }, [
     currentTrackIndex,
-    tracks
+    playlistTracks
   ]);
 
 
@@ -593,10 +642,34 @@ function App() {
 
 
   /* =======================================================
+     PLAYLIST CHANGE
+  ======================================================= */
+
+  const handlePlaylistChange = (playlistId) => {
+    setSelectedPlaylist(playlistId);
+    setIsPlaylistOpen(false);
+
+    const filtered =
+      playlistId === "all"
+        ? tracks
+        : tracks.filter(
+            (t) => (t.playlist || "").toLowerCase() === playlistId.toLowerCase()
+          );
+
+    if (filtered.length > 0) {
+      const exists = filtered.some((t) => t.id === currentTrackId);
+      if (!exists) {
+        selectTrack(filtered[0].id, isPlaying);
+      }
+    }
+  };
+
+
+  /* =======================================================
      SELECT TRACK
   ======================================================= */
 
-  const selectTrack = (id) => {
+  const selectTrack = (id, shouldPlay = true) => {
 
     const index = tracks.findIndex(
       (item) => item.id === id
@@ -616,7 +689,7 @@ function App() {
       audio.pause();
     }
 
-    setIsPlaying(true);
+    setIsPlaying(shouldPlay);
 
   };
 
@@ -627,17 +700,18 @@ function App() {
 
   const previousTrack = () => {
 
-    if (!tracks.length) {
+    if (!playlistTracks.length) {
       return;
     }
 
     const index =
       currentTrackIndex <= 0
-        ? tracks.length - 1
+        ? playlistTracks.length - 1
         : currentTrackIndex - 1;
 
     selectTrack(
-      tracks[index].id
+      playlistTracks[index].id,
+      true
     );
 
   };
@@ -649,17 +723,18 @@ function App() {
 
   const nextTrack = () => {
 
-    if (!tracks.length) {
+    if (!playlistTracks.length) {
       return;
     }
 
     const index =
-      currentTrackIndex >= tracks.length - 1
+      currentTrackIndex >= playlistTracks.length - 1
         ? 0
         : currentTrackIndex + 1;
 
     selectTrack(
-      tracks[index].id
+      playlistTracks[index].id,
+      true
     );
 
   };
@@ -760,44 +835,56 @@ function App() {
 
 
       {/* =================================================
-          SEARCH
+          DASHBOARD MAIN CONTAINER
       ================================================= */}
 
-      <form
-        className="search-container"
-        onSubmit={submitSearch}
-      >
+      <main className={`dashboard-container ${activeUrl ? "hidden" : ""}`}>
 
-        <input
-          type="text"
-          value={search}
-          onChange={(event) =>
-            setSearch(event.target.value)
-          }
-          placeholder="Search Here"
-          aria-label="Search"
-        />
+        {/* =================================================
+            SEARCH
+        ================================================= */}
 
-
-        <button
-          className="search-submit"
-          type="submit"
-          aria-label="Search"
+        <form
+          className="search-container"
+          onSubmit={submitSearch}
         >
-          →
-        </button>
 
-      </form>
+          <input
+            type="text"
+            value={search}
+            onChange={(event) =>
+              setSearch(event.target.value)
+            }
+            placeholder="Search Here"
+            aria-label="Search"
+          />
 
 
-      {/* =================================================
-          IMAGE GRID
-      ================================================= */}
+          <button
+            className="search-submit"
+            type="submit"
+            aria-label="Search"
+          >
+            →
+          </button>
 
-      <section
-        id="home"
-        className={`shortcut-grid ${activeUrl ? "hidden" : ""}`}
-      >
+        </form>
+
+
+        {/* =================================================
+            DASHBOARD CONTENT: GRID + AUDIO PLAYER
+        ================================================= */}
+
+        <div className="dashboard-content">
+
+          {/* =================================================
+              IMAGE GRID
+          ================================================= */}
+
+          <section
+            id="home"
+            className="shortcut-grid"
+          >
 
         {gridButtons.map((button) => (
 
@@ -834,7 +921,10 @@ function App() {
           RIGHT SIDE OF GRID
       ================================================= */}
 
-      <section className={`audio-player ${activeUrl ? "hidden" : ""}`}>
+      <section
+        ref={playerRef}
+        className={`audio-player ${activeUrl ? "hidden" : ""}`}
+      >
 
         {/* =================================================
             REAL AUDIO ELEMENT
@@ -847,22 +937,376 @@ function App() {
 
 
         {/* =================================================
-            DISC
+            PLAYLIST SELECTOR BAR
         ================================================= */}
 
-        <div
-          className={`audio-disc ${
-            isPlaying
-              ? "audio-disc-playing"
-              : ""
-          }`}
-        >
+        <div className="playlist-bar">
 
-          <div className="disc-ring">
+          <div className="playlist-picker-wrapper">
 
-            <div className="disc-inner">
+            <button
+              type="button"
+              className={`playlist-picker-btn ${
+                isPlaylistOpen ? "active" : ""
+              }`}
+              onClick={() => {
+                setIsPlaylistOpen((prev) => !prev);
+                setIsTracksListOpen(false);
+              }}
+              aria-label="Select Playlist"
+              title="Choose Playlist"
+            >
+              <FiList size={13} className="playlist-btn-icon" />
+              <span className="playlist-btn-text">
+                {playlists.find((p) => p.id === selectedPlaylist)?.name || "Playlist"}
+              </span>
+              <FiChevronDown
+                size={13}
+                className={`playlist-chevron ${
+                  isPlaylistOpen ? "rotated" : ""
+                }`}
+              />
+            </button>
 
-              <span className="disc-center" />
+            {isPlaylistOpen && (
+              <div className="playlist-dropdown-menu">
+                <div className="playlist-dropdown-header">
+                  <span>Playlists</span>
+                  <span className="playlist-total-count">
+                    {playlists.length - 1} categories
+                  </span>
+                </div>
+
+                <div className="playlist-options-list">
+                  {playlists.map((pl) => {
+                    const isSelected = selectedPlaylist === pl.id;
+
+                    return (
+                      <button
+                        key={pl.id}
+                        type="button"
+                        className={`playlist-option-btn ${
+                          isSelected ? "selected" : ""
+                        }`}
+                        onClick={() => handlePlaylistChange(pl.id)}
+                      >
+                        <span className="playlist-option-name">
+                          {pl.name}
+                        </span>
+                        <span className="playlist-option-badge">
+                          {pl.count}
+                        </span>
+                        {isSelected && (
+                          <FiCheck
+                            size={13}
+                            className="playlist-check-icon"
+                          />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+          </div>
+
+
+          {/* TRACKS LIST BUTTON & DROPDOWN */}
+
+          <div className="tracks-picker-wrapper">
+
+            <button
+              type="button"
+              className={`tracks-view-btn ${
+                isTracksListOpen ? "active" : ""
+              }`}
+              onClick={() => {
+                setIsTracksListOpen((prev) => !prev);
+                setIsPlaylistOpen(false);
+              }}
+              aria-label="View Tracks"
+              title="View tracks in this playlist"
+            >
+              <FiMusic size={12} />
+              <span className="tracks-count-pill">
+                {playlistTracks.length}
+              </span>
+            </button>
+
+            {isTracksListOpen && (
+              <div className="tracks-dropdown-menu">
+                <div className="playlist-dropdown-header">
+                  <span>
+                    {playlists.find((p) => p.id === selectedPlaylist)?.name || "Tracks"}
+                  </span>
+                  <span className="playlist-total-count">
+                    {playlistTracks.length} songs
+                  </span>
+                </div>
+
+                <div className="tracks-options-list">
+                  {playlistTracks.map((t, idx) => {
+                    const isCurrent = t.id === currentTrackId;
+
+                    return (
+                      <button
+                        key={t.id}
+                        type="button"
+                        className={`track-option-btn ${
+                          isCurrent ? "selected" : ""
+                        }`}
+                        onClick={() => {
+                          selectTrack(t.id, true);
+                          setIsTracksListOpen(false);
+                        }}
+                      >
+                        <span className="track-option-idx">
+                          {idx + 1}
+                        </span>
+                        <div className="track-option-info">
+                          <span className="track-option-title">
+                            {t.title}
+                          </span>
+                          <span className="track-option-artist">
+                            {t.artist}
+                          </span>
+                        </div>
+                        {isCurrent && (
+                          <span className="track-playing-indicator">
+                            {isPlaying ? "▶" : "❚❚"}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+          </div>
+
+        </div>
+
+
+        {/* =================================================
+            PLAYER BODY / PILL ROW
+        ================================================= */}
+
+        <div className="player-body">
+
+          {/* =================================================
+              DISC / FLOWER EMBLEM
+          ================================================= */}
+
+          <div
+            className={`audio-disc ${
+              isPlaying
+                ? "audio-disc-playing"
+                : ""
+            }`}
+          >
+
+            <div className="disc-flower" aria-hidden="true">
+              <svg viewBox="0 0 100 100" className="flower-svg">
+                <circle cx="50" cy="27" r="16" fill="rgba(255,255,255,0.4)" />
+                <circle cx="66" cy="34" r="16" fill="rgba(255,255,255,0.45)" />
+                <circle cx="73" cy="50" r="16" fill="rgba(255,255,255,0.4)" />
+                <circle cx="66" cy="66" r="16" fill="rgba(255,255,255,0.45)" />
+                <circle cx="50" cy="73" r="16" fill="rgba(255,255,255,0.4)" />
+                <circle cx="34" cy="66" r="16" fill="rgba(255,255,255,0.45)" />
+                <circle cx="27" cy="50" r="16" fill="rgba(255,255,255,0.4)" />
+                <circle cx="34" cy="34" r="16" fill="rgba(255,255,255,0.45)" />
+                <circle cx="50" cy="50" r="13" fill="rgba(10,10,14,0.6)" />
+                <circle cx="50" cy="50" r="6" fill="#fff" />
+              </svg>
+            </div>
+
+            <div className="disc-ring">
+
+              <div className="disc-inner">
+
+                <span className="disc-center" />
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          {/* =================================================
+              SONG INFORMATION & PROGRESS
+          ================================================= */}
+
+          <div className="track-information">
+
+            <div className="track-title-row">
+              <div className="track-title">
+                {track?.title ||
+                  "No Track"}
+              </div>
+
+              {/* PILL PLAYLIST / EQUALIZER TRIGGER */}
+              <button
+                type="button"
+                className="pill-playlist-trigger"
+                onClick={() => {
+                  setIsPlaylistOpen((prev) => !prev);
+                  setIsTracksListOpen(false);
+                }}
+                title="Choose Playlist"
+                aria-label="Choose Playlist"
+              >
+                <span className={`pill-bar-dot ${isPlaying ? "dot-anim-1" : ""}`} />
+                <span className={`pill-bar-dot ${isPlaying ? "dot-anim-2" : ""}`} />
+                <span className={`pill-bar-dot ${isPlaying ? "dot-anim-3" : ""}`} />
+                <span className={`pill-bar-dot ${isPlaying ? "dot-anim-4" : ""}`} />
+              </button>
+            </div>
+
+
+            <div className="track-artist">
+              {track?.artist ||
+                "Unknown Artist"}
+            </div>
+
+
+            {/* PROGRESS */}
+            <div className="progress-container">
+
+              <span>
+                {formatTime(currentTime)}
+              </span>
+
+
+              <input
+                className="progress"
+                type="range"
+                min="0"
+                max={duration || 0}
+                value={
+                  Math.min(
+                    currentTime,
+                    duration || 0
+                  )
+                }
+                step="0.1"
+                onChange={changeProgress}
+                aria-label="Seek track"
+              />
+
+
+              <span>
+                {formatTime(duration)}
+              </span>
+
+            </div>
+
+          </div>
+
+
+          {/* =================================================
+              ACTIVE VISUALIZER (DESKTOP)
+          ================================================= */}
+
+          <div
+            className={`audio-visualizer ${
+              isPlaying
+                ? "visualizer-playing"
+                : ""
+            }`}
+            aria-hidden="true"
+          >
+
+            {Array.from({
+              length: 24
+            }).map((_, index) => (
+
+              <span
+                key={index}
+                style={{
+                  "--bar-index": index
+                }}
+              />
+
+            ))}
+
+          </div>
+
+
+          {/* =================================================
+              CONTROLS
+          ================================================= */}
+
+          <div className="player-controls">
+
+            {/* PREVIOUS */}
+
+            <button
+              type="button"
+              className="player-control"
+              onClick={previousTrack}
+              aria-label="Previous"
+            >
+
+              <FiSkipBack size={17} />
+
+            </button>
+
+
+            {/* PLAY / PAUSE */}
+
+            <button
+              type="button"
+              className="play-button"
+              onClick={togglePlay}
+              aria-label={
+                isPlaying
+                  ? "Pause"
+                  : "Play"
+              }
+            >
+
+              {isPlaying ? <FiPause size={20} /> : <FiPlay size={20} />}
+
+            </button>
+
+
+            {/* NEXT */}
+
+            <button
+              type="button"
+              className="player-control"
+              onClick={nextTrack}
+              aria-label="Next"
+            >
+
+              <FiSkipForward size={17} />
+
+            </button>
+
+
+            {/* VOLUME */}
+
+            <div className="volume-control">
+
+              <FiVolume2 size={17} />
+
+
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={volume}
+                onChange={(event) =>
+                  setVolume(
+                    Number(event.target.value)
+                  )
+                }
+                aria-label="Volume"
+              />
 
             </div>
 
@@ -870,183 +1314,85 @@ function App() {
 
         </div>
 
-
-        {/* =================================================
-            SONG INFORMATION
-        ================================================= */}
-
-        <div className="track-information">
-
-          <div className="track-title">
-
-            {track?.title ||
-              "No Track"}
-
-          </div>
-
-
-          <div className="track-artist">
-
-            {track?.artist ||
-              "Unknown Artist"}
-
-          </div>
-
-        </div>
-
-
-        {/* =================================================
-            ACTIVE VISUALIZER
-
-            CSS visualizer is used instead of
-            Web Audio API, so external R2
-            audio can play normally.
-        ================================================= */}
-
-        <div
-          className={`audio-visualizer ${
-            isPlaying
-              ? "visualizer-playing"
-              : ""
-          }`}
-          aria-hidden="true"
-        >
-
-          {Array.from({
-            length: 24
-          }).map((_, index) => (
-
-            <span
-              key={index}
-              style={{
-                "--bar-index": index
-              }}
-            />
-
-          ))}
-
-        </div>
-
-
-        {/* =================================================
-            PROGRESS
-        ================================================= */}
-
-        <div className="progress-container">
-
-          <span>
-            {formatTime(currentTime)}
-          </span>
-
-
-          <input
-            className="progress"
-            type="range"
-            min="0"
-            max={duration || 0}
-            value={
-              Math.min(
-                currentTime,
-                duration || 0
-              )
-            }
-            step="0.1"
-            onChange={changeProgress}
-          />
-
-
-          <span>
-            {formatTime(duration)}
-          </span>
-
-        </div>
-
-
-        {/* =================================================
-            CONTROLS
-        ================================================= */}
-
-        <div className="player-controls">
-
-          {/* PREVIOUS */}
-
-          <button
-            type="button"
-            className="player-control"
-            onClick={previousTrack}
-            aria-label="Previous"
-          >
-
-            <FiSkipBack size={17} />
-
-          </button>
-
-
-          {/* PLAY / PAUSE */}
-
-          <button
-            type="button"
-            className="play-button"
-            onClick={togglePlay}
-            aria-label={
-              isPlaying
-                ? "Pause"
-                : "Play"
-            }
-          >
-
-            {isPlaying ? <FiPause size={20} /> : <FiPlay size={20} />}
-
-          </button>
-
-
-          {/* NEXT */}
-
-          <button
-            type="button"
-            className="player-control"
-            onClick={nextTrack}
-            aria-label="Next"
-          >
-
-            <FiSkipForward size={17} />
-
-          </button>
-
-
-          {/* VOLUME */}
-
-          <div className="volume-control">
-
-            <FiVolume2 size={17} />
-
-
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
-              value={volume}
-              onChange={(event) =>
-                setVolume(
-                  Number(event.target.value)
-                )
-              }
-              aria-label="Volume"
-            />
-
-          </div>
-
-        </div>
-
       </section>
+
+        </div>
+
+
+        {/* =================================================
+            MOBILE SOCIAL BAR (VISIBLE ONLY ON MOBILE/TABLET)
+        ================================================= */}
+
+        <div className="mobile-social-bar">
+
+          <a
+            href="https://github.com/MOCO-SN/"
+            onClick={(e) => {
+              e.preventDefault();
+              handleExternalNav("https://github.com/MOCO-SN/");
+            }}
+            aria-label="GitHub"
+          >
+            <FaGithub size={18} className="side-icon" />
+          </a>
+
+          <a
+            href="#x"
+            aria-label="Twitter"
+          >
+            <FaTwitter size={18} className="side-icon" />
+          </a>
+
+          <a
+            href="https://www.linkedin.com/in/sachin-patel-b5106a295/"
+            onClick={(e) => {
+              e.preventDefault();
+              handleExternalNav("https://www.linkedin.com/in/sachin-patel-b5106a295/");
+            }}
+            aria-label="LinkedIn"
+          >
+            <FaLinkedin size={18} className="side-icon" />
+          </a>
+
+          <a
+            href="#facebook"
+            aria-label="Facebook"
+          >
+            <FaFacebook size={18} className="side-icon" />
+          </a>
+
+          <a
+            href="https://www.instagram.com/_sachin_2006_01/"
+            onClick={(e) => {
+              e.preventDefault();
+              handleExternalNav("https://www.instagram.com/_sachin_2006_01/");
+            }}
+            aria-label="Instagram"
+          >
+            <FaInstagram size={18} className="side-icon" />
+          </a>
+
+          <a
+            href="https://mocosn.in/"
+            onClick={(e) => {
+              e.preventDefault();
+              handleExternalNav("https://mocosn.in/");
+            }}
+            aria-label="Profile"
+          >
+            <FiUser size={18} className="side-icon" />
+          </a>
+
+        </div>
+
+      </main>
 
 
       {/* =================================================
-          RIGHT SIDEBAR
+          RIGHT SIDEBAR (DESKTOP)
       ================================================= */}
 
-<aside className="right-sidebar">
+      <aside className={`right-sidebar ${activeUrl ? "hidden" : ""}`}>
 
   <div className="side-buttons">
 
@@ -1156,7 +1502,37 @@ function App() {
 
             <div className="web-loading">
 
-              <div className="web-loading-spinner" />
+              <div className="web-loading-card">
+
+                <div className="web-loading-spinner-box">
+                  <div className="web-loading-spinner" />
+                  <div className="web-loading-spinner-glow" />
+                </div>
+
+                <div className="web-loading-content">
+                  <h3 className="web-loading-title">moco is preparing for you</h3>
+                  <p className="web-loading-subtitle">
+                    Please wait while your page is loading
+                  </p>
+                  <div className="web-loading-dots">
+                    <span />
+                    <span />
+                    <span />
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className="web-loading-close-btn"
+                  onClick={() => {
+                    setActiveUrl("");
+                    setIsLoading(false);
+                  }}
+                >
+                  Return to Home
+                </button>
+
+              </div>
 
             </div>
 
