@@ -211,9 +211,7 @@ a {
 
   border: 1px solid rgba(255, 255, 255, 0.14);
 
-  backdrop-filter: blur(22px);
-
-  -webkit-backdrop-filter: blur(22px);
+  backdrop-filter: blur(10px);
 
   transition: border-color 0.25s ease, background 0.25s ease;
 }
@@ -394,7 +392,6 @@ a {
 
   backdrop-filter: blur(25px);
 
-  -webkit-backdrop-filter: blur(25px);
 }
 
 /* =========================================================
@@ -424,7 +421,6 @@ a {
 
   backdrop-filter: blur(20px);
 
-  -webkit-backdrop-filter: blur(20px);
 }
 
 .mobile-social-bar a {
@@ -511,9 +507,6 @@ a {
   cursor: pointer;
 
   backdrop-filter: blur(12px);
-
-  -webkit-backdrop-filter: blur(12px);
-
   transition: all 0.2s ease;
 }
 
@@ -570,8 +563,6 @@ a {
   background: rgba(18, 18, 22, 0.92);
 
   backdrop-filter: blur(28px);
-
-  -webkit-backdrop-filter: blur(28px);
 
   border: 1px solid rgba(255, 255, 255, 0.16);
 
@@ -743,8 +734,6 @@ a {
 
   backdrop-filter: blur(12px);
 
-  -webkit-backdrop-filter: blur(12px);
-
   transition: all 0.2s ease;
 }
 
@@ -780,7 +769,6 @@ a {
 
   backdrop-filter: blur(28px);
 
-  -webkit-backdrop-filter: blur(28px);
 
   border: 1px solid rgba(255, 255, 255, 0.16);
 
@@ -1281,9 +1269,7 @@ a {
 
   border: 1px solid rgba(255, 255, 255, 0.14);
 
-  backdrop-filter: blur(22px);
-
-  -webkit-backdrop-filter: blur(22px);
+  backdrop-filter: blur(10px);
 
   z-index: 40;
 
@@ -1370,9 +1356,7 @@ a {
 
   border: 1px solid rgba(255, 255, 255, 0.14);
 
-  backdrop-filter: blur(22px);
-
-  -webkit-backdrop-filter: blur(22px);
+  backdrop-filter: blur(10px);
 }
 
 .bottom-navigation {
@@ -1545,7 +1529,6 @@ a {
     border: 1px solid rgba(255, 255, 255, 0.24);
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
     backdrop-filter: blur(28px);
-    -webkit-backdrop-filter: blur(28px);
     gap: 0;
     overflow: visible;
   }
@@ -1899,7 +1882,6 @@ a {
 
   backdrop-filter: blur(16px);
 
-  -webkit-backdrop-filter: blur(16px);
 
   animation: webLoadingFade 0.25s ease;
 }
@@ -1931,7 +1913,6 @@ a {
 
   backdrop-filter: blur(25px);
 
-  -webkit-backdrop-filter: blur(25px);
 
   text-align: center;
 }
